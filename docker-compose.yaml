@@ -1,6 +1,31 @@
 version: "3.7"
 
+networks:
+  redis-network:
+    name: redis-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/16
+
 services:
+  redis-cluster:
+    image: redis:6-alpine
+    command: 'redis-cli --cluster create 
+    10.0.0.11:6379 10.0.0.12:6379 10.0.0.13:6379 
+    10.0.0.14:6379 10.0.0.15:6379 10.0.0.16:6379 
+    --cluster-yes --cluster-replicas 1'
+    networks:
+      - redis-network
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+      - redis4
+      - redis5
+      - redis6
+
   redis1:
     image: redis:6-alpine
     container_name: redis1
@@ -10,10 +35,9 @@ services:
         ipv4_address: 10.0.0.11
     expose:
       - 6379
-      - 16379
     volumes:
-      - $PWD/docker-data/redis:/data
-      - $PWD/docker-config/redis1.conf:/usr/local/etc/redis/redis.conf
+      - $PWD/docker-data/redis1:/data
+      - $PWD/docker-config/redis.conf:/usr/local/etc/redis/redis.conf
 
   redis2:
     image: redis:6-alpine
@@ -24,10 +48,9 @@ services:
         ipv4_address: 10.0.0.12
     expose:
       - 6379
-      - 16379
     volumes:
-      - $PWD/docker-data/redis:/data
-      - $PWD/docker-config/redis2.conf:/usr/local/etc/redis/redis.conf
+      - $PWD/docker-data/redis2:/data
+      - $PWD/docker-config/redis.conf:/usr/local/etc/redis/redis.conf
 
   redis3:
     image: redis:6-alpine
@@ -38,25 +61,45 @@ services:
         ipv4_address: 10.0.0.13
     expose:
       - 6379
-      - 16379
     volumes:
-      - $PWD/docker-data/redis:/data
-      - $PWD/docker-config/redis3.conf:/usr/local/etc/redis/redis.conf
+      - $PWD/docker-data/redis3:/data
+      - $PWD/docker-config/redis.conf:/usr/local/etc/redis/redis.conf
 
-  redis-cluster:
+  redis4:
     image: redis:6-alpine
-    command: redis-cli --cluster create 10.0.0.11:6379 10.0.0.12:6379 10.0.0.13:6379 --cluster-yes --cluster-replicas 0
+    container_name: redis4
+    command: redis-server /usr/local/etc/redis/redis.conf
     networks:
-      - redis-network
-    depends_on:
-      - redis1
-      - redis2
-      - redis3
+      redis-network:
+        ipv4_address: 10.0.0.14
+    expose:
+      - 6379
+    volumes:
+      - $PWD/docker-data/redis4:/data
+      - $PWD/docker-config/redis.conf:/usr/local/etc/redis/redis.conf
 
-networks:
-  redis-network:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.0.0.0/16
+  redis5:
+    image: redis:6-alpine
+    container_name: redis5
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      redis-network:
+        ipv4_address: 10.0.0.15
+    expose:
+      - 6379
+    volumes:
+      - $PWD/docker-data/redis5:/data
+      - $PWD/docker-config/redis.conf:/usr/local/etc/redis/redis.conf
+
+  redis6:
+    image: redis:6-alpine
+    container_name: redis6
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      redis-network:
+        ipv4_address: 10.0.0.16
+    expose:
+      - 6379
+    volumes:
+      - $PWD/docker-data/redis6:/data
+      - $PWD/docker-config/redis.conf:/usr/local/etc/redis/redis.conf
