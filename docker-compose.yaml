@@ -10,6 +10,18 @@ networks:
         - subnet: 10.0.0.0/16
 
 services:
+  redis-proxy:
+    container_name: redis-proxy
+    build:
+      context: .
+    ports: 
+      - "7777:7777"
+    networks:
+      - redis-network
+    command: 'redis-cluster-proxy 10.0.0.11:6379 10.0.0.12:6379 10.0.0.13:6379 10.0.0.14:6379 10.0.0.15:6379 10.0.0.16:6379'
+    depends_on:
+      - redis-cluster
+
   redis-cluster:
     image: redis:6-alpine
     command: 'redis-cli --cluster create 
